@@ -110,4 +110,5 @@ def points_display(child):
         return render_template('error.html', error_message=f'{child} points data is empty or cannot be parsed.')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    #app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=80)
