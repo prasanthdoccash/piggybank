@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Task Input - {{ child }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Task Input for {{ child }}</h1>
+    <form method="POST">
+        <table>
+            <tr>
+                <th>Task</th>
+                <th>Points</th>
+            </tr>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task }}</td>
+                <td><input type="number" name="points"></td>
+            </tr>
+            {% endfor %}
+        </table>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
