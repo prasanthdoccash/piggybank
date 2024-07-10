@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Piggy Bank</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Welcome to the Piggy Bank</h1>
+    <h2>Select a child</h2>
+    {% for child in children %}
+        <a href="{{ url_for('task_input', child=child) }}"><button>{{ child }}</button></a>
+    {% endfor %}
+</body>
+</html>
