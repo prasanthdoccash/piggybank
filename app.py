@@ -94,4 +94,4 @@ def points_display(child):
     return render_template('points_display.html', points_summary=points_summary, child=child, total_earned=total_earned)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=80)
+    app.run(debug=True, host='0.0.0.0', port=83)
