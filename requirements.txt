@@ -2,3 +2,4 @@ pandas
 flask
 datetime
 flask_sqlalchemy
+psycopg2
