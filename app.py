@@ -1,114 +1,95 @@
-import pandas as pd
 from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-import os
 
 app = Flask(__name__)
 
-# Ensure tasks.csv exists
-tasks_file = 'tasks.csv'
-if not os.path.exists(tasks_file):
-    tasks_df = pd.DataFrame(columns=['task'])
-    tasks_df.to_csv(tasks_file, index=False)
-else:
-    tasks_df = pd.read_csv(tasks_file)
+# Configure the PostgreSQL database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://prasanth6:Qoz7mjjkVsiGWZ8qviximXME3aBVRGBf@dpg-cq7l85jv2p9s73c675n0-a/piggy_breu'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
-# Initialize children's points files if they don't exist
-children = ['Nainika', 'Dyansh']
-for child in children:
-    points_file = f'{child}_points.csv'
-    if not os.path.exists(points_file):
-        pd.DataFrame(columns=['Date'] + list(tasks_df['task']) + ['Redeemed']).to_csv(points_file, index=False)
+# Define the TaskPoints model
+class TaskPoints(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    wake_up_early = db.Column(db.Float, nullable=False, default=0)
+    breakfast = db.Column(db.Float, nullable=False, default=0)
+    afternoon_sleeping = db.Column(db.Float, nullable=False, default=0)
+    study_everyday = db.Column(db.Float, nullable=False, default=0)
+    proper_dinner = db.Column(db.Float, nullable=False, default=0)
+    sleeping_on_time = db.Column(db.Float, nullable=False, default=0)
+    screen_time = db.Column(db.Float, nullable=False, default=0)
+    healthy_food = db.Column(db.Float, nullable=False, default=0)
+    unhealthy_food = db.Column(db.Float, nullable=False, default=0)
+    redeemed = db.Column(db.Float, nullable=False, default=0)
+
+db.create_all()
 
 @app.route('/')
 def index():
+    children = ['Nainika', 'Dyansh']
     return render_template('index.html', children=children)
 
 @app.route('/task_input/<child>', methods=['GET', 'POST'])
 def task_input(child):
-    points_file = f'{child}_points.csv'
-    
-    # Check if the points file exists
-    if not os.path.exists(points_file):
-        return render_template('error.html', error_message=f'{child} points data is missing.')
-
     if request.method == 'POST':
-        date = datetime.now().strftime('%d/%m/%Y')
-        points = request.form.getlist('points')
-        new_data = {task: float(point) if point else 0 for task, point in zip(tasks_df['task'], points)}
-        new_data['Date'] = date
-        new_data['Redeemed'] = 0
-        new_data_df = pd.DataFrame(new_data, index=[0])
-        
-        try:
-            # Read the entire CSV file including headers
-            points_df = pd.read_csv(points_file)
-        except pd.errors.EmptyDataError:
-            points_df = pd.DataFrame(columns=['Date'] + list(tasks_df['task']) + ['Redeemed'])
-        
-        points_df = pd.concat([points_df, new_data_df], ignore_index=True)
-        points_df.to_csv(points_file, index=False)
+        date = datetime.utcnow().date()
+        wake_up_early = float(request.form['wake_up_early'])
+        breakfast = float(request.form['breakfast'])
+        afternoon_sleeping = float(request.form['afternoon_sleeping'])
+        study_everyday = float(request.form['study_everyday'])
+        proper_dinner = float(request.form['proper_dinner'])
+        sleeping_on_time = float(request.form['sleeping_on_time'])
+        screen_time = float(request.form['screen_time'])
+        healthy_food = float(request.form['healthy_food'])
+        unhealthy_food = float(request.form['unhealthy_food'])
+
+        task_points = TaskPoints(
+            date=date,
+            wake_up_early=wake_up_early,
+            breakfast=breakfast,
+            afternoon_sleeping=afternoon_sleeping,
+            study_everyday=study_everyday,
+            proper_dinner=proper_dinner,
+            sleeping_on_time=sleeping_on_time,
+            screen_time=screen_time,
+            healthy_food=healthy_food,
+            unhealthy_food=unhealthy_food,
+            redeemed=0
+        )
+        db.session.add(task_points)
+        db.session.commit()
         return redirect(url_for('points_display', child=child))
-    
-    return render_template('task_input.html', tasks=tasks_df['task'], child=child)
+
+    return render_template('task_input.html', child=child)
 
 @app.route('/points_display/<child>', methods=['GET', 'POST'])
 def points_display(child):
-    points_file = f'{child}_points.csv'
+    total_earned = db.session.query(
+        db.func.sum(TaskPoints.wake_up_early) +
+        db.func.sum(TaskPoints.breakfast) +
+        db.func.sum(TaskPoints.afternoon_sleeping) +
+        db.func.sum(TaskPoints.study_everyday) +
+        db.func.sum(TaskPoints.proper_dinner) +
+        db.func.sum(TaskPoints.sleeping_on_time) +
+        db.func.sum(TaskPoints.screen_time) +
+        db.func.sum(TaskPoints.healthy_food) +
+        db.func.sum(TaskPoints.unhealthy_food) -
+        db.func.sum(TaskPoints.redeemed)
+    ).scalar() or 0
 
-    # Check if the points file exists
-    if not os.path.exists(points_file):
-        return render_template('error.html', error_message=f'{child} points data is missing.')
+    if request.method == 'POST':
+        redeem_points = float(request.form['redeem_points'])
+        if redeem_points <= total_earned:
+            new_redeemed = TaskPoints.query.order_by(TaskPoints.date.desc()).first()
+            new_redeemed.redeemed += redeem_points
+            db.session.commit()
+            total_earned -= redeem_points
+        return redirect(url_for('points_display', child=child))
 
-    try:
-        # Read the entire CSV file including headers
-        points_df = pd.read_csv(points_file)
-        
-        # Convert columns to numeric types
-        numeric_cols = ['wake up early (5)','Breakfast (5)','Afternoon sleeping (2)','Study everyday (3)','Proper dinner (2)',
-'Sleeping on time (3)',
-'screen time (10)',
-'Healthy food (x)',
-'Unhealthy food (x)', 'Redeemed']
-        for col in numeric_cols:
-            points_df[col] = pd.to_numeric(points_df[col], errors='coerce').fillna(0)
-
-        if request.method == 'POST':
-            redeem_points = float(request.form['redeem_points'])
-            
-            # Recalculate total earned before redemption
-            total_earned_before = points_df.drop(columns=['Date', 'Redeemed']).sum().sum()
-            print(total_earned_before)
-            if redeem_points <= total_earned_before:
-                # Update the last row with redeemed points
-                points_df.loc[points_df.index[-1], 'Redeemed'] += redeem_points
-                points_df.to_csv(points_file, index=False)
-                
-                # Recalculate total earned after redemption
-                total_earned_after = total_earned_before - redeem_points
-                print(total_earned_after)
-                # Assign the updated total earned
-                total_earned = total_earned_after
-            else:
-                redeem_points = total_earned_before
-                points_df.loc[points_df.index[-1], 'Redeemed'] += redeem_points
-                points_df.to_csv(points_file, index=False)
-                total_earned = 0  # Set total earned to zero after full redemption
-
-        else:
-            # Initial calculation of total earned when no redemption occurs
-            total_earned = points_df.drop(columns=['Date', 'Redeemed']).sum().sum()
-
-        points_summary = points_df.groupby('Date').sum().reset_index()
-
-        # Convert to list for Jinja2 template rendering
-        points_summary_list = points_summary.values.tolist()
-
-        return render_template('points_display.html', points_summary=points_summary_list, child=child, total_earned=total_earned)
-
-    except pd.errors.EmptyDataError:
-        return render_template('error.html', error_message=f'{child} points data is empty or cannot be parsed.')
+    points_summary = TaskPoints.query.all()
+    return render_template('points_display.html', points_summary=points_summary, child=child, total_earned=total_earned)
 
 if __name__ == '__main__':
-    #app.run(debug=True)
     app.run(debug=True, host='0.0.0.0', port=80)
