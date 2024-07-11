@@ -14,31 +14,30 @@
     <table>
         <tr>
             <th>Date</th>
-            <th>wake up early (5)</th>
-            <th>Breakfast (5)</th>
-                <th>Afternoon sleeping (2)</th>
-                    <th>Study everyday (3)</th>
-                        <th>Proper dinner (2)</th>
-                            <th>Sleeping on time (3)</th>
-                                <th>screen time (10)</th>
-                                    <th>Healthy food (x)</th>
-                                        <th>Unhealthy food (x)</th>
-                                        <th>Redeemed</th>
+            <th>Wake up early</th>
+            <th>Breakfast</th>
+            <th>Afternoon sleeping</th>
+            <th>Study everyday</th>
+            <th>Proper dinner</th>
+            <th>Sleeping on time</th>
+            <th>Screen time</th>
+            <th>Healthy food</th>
+            <th>Unhealthy food</th>
+            <th>Redeemed</th>
         </tr>
         {% for row in points_summary %}
         <tr>
-            <td>{{ row[0] }}</td>
-            <td>{{ row[1] }}</td>
-            <td>{{ row[2] }}</td>
-            <td>{{ row[3] }}</td>
-            <td>{{ row[4] }}</td>
-            <td>{{ row[5] }}</td>
-            <td>{{ row[6] }}</td>
-            <td>{{ row[7] }}</td>
-            <td>{{ row[8] }}</td>
-            <td>{{ row[9] }}</td>
-            <td>{{ row[10] }}</td>
-            
+            <td>{{ row.date }}</td>
+            <td>{{ row.wake_up_early }}</td>
+            <td>{{ row.breakfast }}</td>
+            <td>{{ row.afternoon_sleeping }}</td>
+            <td>{{ row.study_everyday }}</td>
+            <td>{{ row.proper_dinner }}</td>
+            <td>{{ row.sleeping_on_time }}</td>
+            <td>{{ row.screen_time }}</td>
+            <td>{{ row.healthy_food }}</td>
+            <td>{{ row.unhealthy_food }}</td>
+            <td>{{ row.redeemed }}</td>
         </tr>
         {% endfor %}
     </table>
@@ -49,6 +48,5 @@
         <input type="number" id="redeem_points" name="redeem_points" min="0" max="{{ total_earned }}" required>
         <button type="submit">Redeem</button>
     </form>
-
 </body>
 </html>
