@@ -1,3 +1,4 @@
 pandas
 flask
 datetime
+flask_sqlalchemy
