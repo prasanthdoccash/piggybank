@@ -24,7 +24,8 @@ class TaskPoints(db.Model):
     unhealthy_food = db.Column(db.Float, nullable=False, default=0)
     redeemed = db.Column(db.Float, nullable=False, default=0)
 
-db.create_all()
+with app.app_context():
+    db.create_all()
 
 @app.route('/')
 def index():
@@ -82,10 +83,11 @@ def points_display(child):
     if request.method == 'POST':
         redeem_points = float(request.form['redeem_points'])
         if redeem_points <= total_earned:
-            new_redeemed = TaskPoints.query.order_by(TaskPoints.date.desc()).first()
-            new_redeemed.redeemed += redeem_points
-            db.session.commit()
-            total_earned -= redeem_points
+            latest_entry = TaskPoints.query.order_by(TaskPoints.date.desc()).first()
+            if latest_entry:
+                latest_entry.redeemed += redeem_points
+                db.session.commit()
+                total_earned -= redeem_points
         return redirect(url_for('points_display', child=child))
 
     points_summary = TaskPoints.query.all()
