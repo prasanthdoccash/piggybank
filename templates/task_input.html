@@ -6,21 +6,35 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Task Input for {{ child }}</h1>
-<h4><a href="/points_display"> check points</a> </h4>
-    <form method="POST">
-        <table>
-            <tr>
-                <th>Task</th>
-                <th>Points</th>
-            </tr>
-            {% for task in tasks %}
-            <tr>
-                <td>{{ task }}</td>
-                <td><input type="number" name="points"></td>
-            </tr>
-            {% endfor %}
-        </table>
+    <h1>Enter Tasks for {{ child }}</h1>
+    <form method="POST" action="{{ url_for('task_input', child=child) }}">
+        <label for="wake_up_early">Wake up early:</label>
+        <input type="number" id="wake_up_early" name="wake_up_early" required><br>
+
+        <label for="breakfast">Breakfast:</label>
+        <input type="number" id="breakfast" name="breakfast" required><br>
+
+        <label for="afternoon_sleeping">Afternoon sleeping:</label>
+        <input type="number" id="afternoon_sleeping" name="afternoon_sleeping" required><br>
+
+        <label for="study_everyday">Study everyday:</label>
+        <input type="number" id="study_everyday" name="study_everyday" required><br>
+
+        <label for="proper_dinner">Proper dinner:</label>
+        <input type="number" id="proper_dinner" name="proper_dinner" required><br>
+
+        <label for="sleeping_on_time">Sleeping on time:</label>
+        <input type="number" id="sleeping_on_time" name="sleeping_on_time" required><br>
+
+        <label for="screen_time">Screen time:</label>
+        <input type="number" id="screen_time" name="screen_time" required><br>
+
+        <label for="healthy_food">Healthy food:</label>
+        <input type="number" id="healthy_food" name="healthy_food" required><br>
+
+        <label for="unhealthy_food">Unhealthy food:</label>
+        <input type="number" id="unhealthy_food" name="unhealthy_food" required><br>
+
         <button type="submit">Submit</button>
     </form>
 </body>
